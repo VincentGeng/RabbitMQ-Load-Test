@@ -1,4 +1,4 @@
-package com.vincent.lab.RabbitMQLoadTest;
+package com.vincent.lab;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

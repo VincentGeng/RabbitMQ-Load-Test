@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.vincent.lab;
 
 import java.util.concurrent.CountDownLatch;
@@ -24,7 +21,7 @@ import com.vincent.lab.rabbitmq.service.UserService;
 @SpringBootTest(classes = RabbitMqLoadTestApplication.class)
 public class RabbitMQLoadTest {
 	
-	final static int CONCURRENT_LOGIN_USERS = 5000;
+	final static int CONCURRENT_LOGIN_USERS = 200;
 	
 	@Autowired
     private UserService userService;
@@ -41,7 +38,7 @@ public class RabbitMQLoadTest {
             executorService.submit(new Runnable() {
                 public void run() {
                     try {
-                    	userService.getUserByNameProducer("Vincent" + number);
+                    	userService.getUserByNameUsingRabbitMQ("Vincent" + number);
                     } finally{
                         count.countDown();
                     }

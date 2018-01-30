@@ -14,9 +14,7 @@ public interface UserService {
 	
 	void deleteAllUsers();
 	
-	void getUserByNameProducer(String name);
-	
-	void getUserByNameConsumer(String name);
+	void getUserByNameUsingRabbitMQ(String name);
 	
 	void getUserByName(String name);
 	

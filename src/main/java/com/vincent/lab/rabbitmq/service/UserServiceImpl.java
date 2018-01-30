@@ -6,6 +6,8 @@ package com.vincent.lab.rabbitmq.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -19,12 +21,14 @@ import com.vincent.lab.rabbitmq.repositories.UserRepository;
  *
  * Created on 30 Jan 2018
  */
-@Service
 
+@Service
 public class UserServiceImpl implements UserService {
 	
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	
 	public static final int TOTAL_USERS_NUMBER = 200000;
-	public static final int BATCH_USERS_NUMBER = 200;
+	public static final int BATCH_USERS_NUMBER = 50;
 	
 	private final UserRepository userRepository;
 	
@@ -57,18 +61,12 @@ public class UserServiceImpl implements UserService {
 	 * @see com.vincent.lab.rabbitmq.service.UserService#getUserByNameProducer(java.lang.String)
 	 */
 	@Override
-	public void getUserByNameProducer(String name) {
+	public void getUserByNameUsingRabbitMQ(String name) {
+		log.info("Producing Name Parameter: "+name);
 		this.rabbitTemplate.convertAndSend("loadtest", name);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.vincent.lab.rabbitmq.service.UserService#getUserByNameConsumer(java.lang.String)
-	 */
-	@RabbitListener(queues = "loadtest")
-	@RabbitHandler
-	@Override
-	public void getUserByNameConsumer(String name) {
-		System.out.println(userRepository.findByName(name).toString());
+		String consumingName = (String) this.rabbitTemplate.receiveAndConvert("loadtest");
+		log.info("Consuming Name Parameter: "+consumingName);
+		log.info(userRepository.findByName(consumingName).toString());
 	}
 
 	/* (non-Javadoc)

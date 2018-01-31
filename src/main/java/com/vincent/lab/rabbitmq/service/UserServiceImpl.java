@@ -6,6 +6,7 @@ package com.vincent.lab.rabbitmq.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -62,11 +63,23 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public void getUserByNameUsingRabbitMQ(String name) {
+		producingMessage(name);
+		consumingMessage();
+	}
+
+	private void consumingMessage() {
+		String name = "";
+		while(true){
+			name = (String) this.rabbitTemplate.receiveAndConvert("loadtest");
+			if(StringUtils.isNotBlank(name)) break;
+		}
+//		log.info("Consuming Name Parameter: "+name);
+		log.info(userRepository.findByName(name).toString());
+	}
+
+	private void producingMessage(String name) {
 		log.info("Producing Name Parameter: "+name);
 		this.rabbitTemplate.convertAndSend("loadtest", name);
-		String consumingName = (String) this.rabbitTemplate.receiveAndConvert("loadtest");
-		log.info("Consuming Name Parameter: "+consumingName);
-		log.info(userRepository.findByName(consumingName).toString());
 	}
 
 	/* (non-Javadoc)
@@ -74,7 +87,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public void getUserByName(String name) {
-		System.out.println(userRepository.findByName(name).toString());
+		log.info(userRepository.findByName(name).toString());
 	}
 
 	/* (non-Javadoc)

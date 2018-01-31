@@ -21,7 +21,7 @@ import com.vincent.lab.rabbitmq.service.UserService;
 @SpringBootTest(classes = RabbitMqLoadTestApplication.class)
 public class RabbitMQLoadTest {
 	
-	final static int CONCURRENT_LOGIN_USERS = 200;
+	final static int CONCURRENT_LOGIN_USERS = 500;
 	
 	@Autowired
     private UserService userService;

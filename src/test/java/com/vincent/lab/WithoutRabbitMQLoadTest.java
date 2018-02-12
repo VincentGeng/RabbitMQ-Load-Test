@@ -9,9 +9,10 @@ import java.util.concurrent.Executors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.vincent.lab.rabbitmq.service.UserService;
@@ -26,7 +27,8 @@ import com.vincent.lab.rabbitmq.service.UserService;
 //@TestPropertySource(locations="classpath:test.properties")
 public class WithoutRabbitMQLoadTest {
 	
-	final static int CONCURRENT_LOGIN_USERS = 1000;
+	final static int CONCURRENT_LOGIN_USERS = 5000;
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
     private UserService userService;
@@ -34,7 +36,8 @@ public class WithoutRabbitMQLoadTest {
 	@Test
 	public void test() {
 		
-		final CountDownLatch count = new CountDownLatch(CONCURRENT_LOGIN_USERS);
+		final CountDownLatch concurrentThreadsLatch = new CountDownLatch(1);
+		final CountDownLatch mainThreadLatch = new CountDownLatch(CONCURRENT_LOGIN_USERS);
         
         final ExecutorService executorService = Executors.newFixedThreadPool(CONCURRENT_LOGIN_USERS);
         
@@ -43,18 +46,21 @@ public class WithoutRabbitMQLoadTest {
             executorService.submit(new Runnable() {
                 public void run() {
                     try {
+                    	concurrentThreadsLatch.await();
                     	userService.getUserByName("Vincent" + number);
-                    } finally{
-                        count.countDown();
+                    } catch (InterruptedException e) {
+            			e.printStackTrace();
+            		}finally{
+                        mainThreadLatch.countDown();
                     }
                 }
             });
         }
         
+        concurrentThreadsLatch.countDown();
         try {
-			count.await();
+			mainThreadLatch.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         

@@ -21,7 +21,7 @@ import com.vincent.lab.rabbitmq.service.UserService;
 @SpringBootTest(classes = RabbitMqLoadTestApplication.class)
 public class RabbitMQLoadTest {
 	
-	final static int CONCURRENT_LOGIN_USERS = 500;
+	final static int CONCURRENT_LOGIN_USERS = 2000;
 	
 	@Autowired
     private UserService userService;
@@ -29,7 +29,8 @@ public class RabbitMQLoadTest {
 	@Test
 	public void test() {
 		
-		final CountDownLatch count = new CountDownLatch(CONCURRENT_LOGIN_USERS);
+		final CountDownLatch concurrentThreadsLatch = new CountDownLatch(1);
+		final CountDownLatch mainThreadLatch = new CountDownLatch(CONCURRENT_LOGIN_USERS);
         
         final ExecutorService executorService = Executors.newFixedThreadPool(CONCURRENT_LOGIN_USERS);
         
@@ -38,18 +39,21 @@ public class RabbitMQLoadTest {
             executorService.submit(new Runnable() {
                 public void run() {
                     try {
+                    	concurrentThreadsLatch.await();
                     	userService.getUserByNameUsingRabbitMQ("Vincent" + number);
-                    } finally{
-                        count.countDown();
+                    } catch (InterruptedException e) {
+            			e.printStackTrace();
+            		} finally{
+                        mainThreadLatch.countDown();
                     }
                 }
             });
         }
         
+        concurrentThreadsLatch.countDown();
         try {
-			count.await();
+			mainThreadLatch.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         

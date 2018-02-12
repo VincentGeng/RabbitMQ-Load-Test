@@ -87,6 +87,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public void getUserByName(String name) {
+//		log.info(Thread.currentThread().getName() + " Execution starts at: " + System.currentTimeMillis());
 		log.info(userRepository.findByName(name).toString());
 	}
 

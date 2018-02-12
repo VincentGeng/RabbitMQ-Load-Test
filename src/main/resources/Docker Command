@@ -1,0 +1,20 @@
+#Install and run Rabbit MQ in docker
+docker run -d --hostname my-rabbit --name vincent-rabbit -e RABBITMQ_DEFAULT_USER=vincent -e RABBITMQ_DEFAULT_PASS=vincent -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+
+# Check all dockers
+docker ps -a
+
+# Check current running dockers
+docker ps
+
+# Start all containers
+docker start $(docker ps -a -q)
+
+# Stop all containers
+docker stop $(docker ps -a -q)
+
+# Delete all containers
+docker rm $(docker ps -a -q)
+
+# Delete all images
+docker rmi $(docker images -q)
